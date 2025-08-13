@@ -1,6 +1,25 @@
+# docker-compose.yml
+# This file defines the services that make up the app.
+# This is the full version including the VPN service.
 services:
-  app:
-    hostname: container-name.internal #
+  # Umbrel's app proxy service - REQUIRED
+  app_proxy:
+    environment:
+      APP_HOST: vpn
+      APP_PORT: 8080
+
+  # The VPN container. All network traffic will go through here.
+  vpn:
+    image: qmcgaw/gluetun:latest
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - 8080:8080
+    volumes:
+      # Mapped to the app's specific data directory.
+      - ${APP_DATA_DIR}/gluetun:/gluetun
     environment:
       - VPN_ENABLED=true #
       - VPN_CONF=wg0 #
@@ -21,11 +40,26 @@ services:
       - PRIVOXY_ENABLED=false #
       - UNBOUND_ENABLED=false #
       - UNBOUND_NAMESERVERS #
-    cap_add:
-      - NET_ADMIN
-    sysctls:
-      - net.ipv4.conf.all.src_valid_mark=1 #
-      - net.ipv6.conf.all.disable_ipv6=1 #
-    devices:
-      - /dev/net/tun:/dev/net/tun # OPTIONAL
-    ...
+
+    restart: unless-stopped
+
+  # The qBittorrent container.
+  qbittorrent:
+    container_name: qbittorrent
+    image: ghcr.io/hotio/qbittorrent
+    network_mode: "service:vpn"
+    depends_on:
+      - vpn
+    volumes:
+      # Mapped to the app's specific data directory.
+      - ${APP_DATA_DIR}/config:/config
+      - ${APP_DATA_DIR}/downloads:/data
+    environment:
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+      - WEBUI_PORTS=8080/tcp,8080/udp
+      - LIBTORRENT=v1
+    restart: unless-stopped
