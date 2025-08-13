@@ -1,6 +1,6 @@
 # umbrel-app.yml
 # This file defines the user-facing configuration for the qBittorrent+VPN app.
-
+manifestVersion: 1
 id: diseric-qbittorrent-vpn
 name: qBittorrent with VPN
 version: "4.6.5"
@@ -8,21 +8,17 @@ category: Files
 tagline: A feature-rich BitTorrent client routed through a VPN.
 description: >-
   qBittorrent is a free and open-source BitTorrent client.
-
   This package automatically routes all of qBittorrent's traffic through a
   built-in VPN client powered by Gluetun. This enhances your privacy and
   security by hiding your IP address.
-
   You must configure your VPN provider in the settings before starting the app.
   Supports many providers like PIA, NordVPN, Mullvad, and more.
 developer: The qBittorrent project
 author: diseric
 port: 8080
-
 # This tells Umbrel to use the docker-compose.yml file for its setup.
 compose:
   file: docker-compose.yml
-
 # This section defines the settings form that the user will see in the Umbrel UI.
 # The values entered here will be passed as environment variables to the
 # docker-compose.yml file.
@@ -60,7 +56,6 @@ settings:
             - id: tcp
               label: TCP (More Reliable)
           defaultValue: udp
-
     - id: credentials
       title: Credentials
       description: Your VPN account login details.
@@ -81,7 +76,6 @@ settings:
           label: WireGuard IP Address (optional)
           type: text
           placeholder: "e.g. 10.2.0.5/32"
-
     - id: connection
       title: Server Connection
       description: Choose which server region to connect to.
@@ -94,13 +88,11 @@ settings:
           label: City (e.g., Zurich)
           type: text
           placeholder: "Zurich"
-
 # A list of required permissions for the app.
 permissions:
   - "data-dir"
-
 # Submission details.
 submission:
   website: https://www.qbittorrent.org/
   container_source: https://hotio.dev/containers/qbittorrent/
-  app_source: https://github.com/diseric/diserics-app-store
+  app_source: https://github.com/diseric/diseric-umbrel-app-store
