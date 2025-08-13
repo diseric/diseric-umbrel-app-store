@@ -55,7 +55,6 @@ services:
       - ${APP_DATA_DIR}/config:/config
       - ${APP_DATA_DIR}/downloads:/data
     environment:
-    environment:
       - PUID=1000
       - PGID=1000
       - UMASK=002
