@@ -16,7 +16,7 @@ services:
     devices:
       - /dev/net/tun:/dev/net/tun
     ports:
-      - 8080:8080
+      - 8082:8082
     volumes:
       # Mapped to the app's specific data directory.
       - ${APP_DATA_DIR}/gluetun:/gluetun
