@@ -1,5 +1,3 @@
-# umbrel-app.yml
-# This file defines the user-facing configuration for the qBittorrent+VPN app.
 manifestVersion: 1
 id: diseric-qbittorrent-vpn
 name: qBittorrent with VPN
@@ -15,83 +13,66 @@ description: >-
   Supports many providers like PIA, NordVPN, Mullvad, and more.
 developer: The qBittorrent project
 author: diseric
-port: 8081
-# This tells Umbrel to use the docker-compose.yml file for its setup.
+port: 8082
 compose:
   file: docker-compose.yml
-# This section defines the settings form that the user will see in the Umbrel UI.
-# The values entered here will be passed as environment variables to the
-# docker-compose.yml file.
 settings:
-  title: VPN Configuration
-  description: Enter your VPN provider details here. The app will not work until this is configured.
-  groups:
-    - id: provider
-      title: VPN Provider
-      description: Select your VPN provider and protocol.
-      fields:
-        - id: VPN_SERVICE_PROVIDER
-          label: VPN Provider
-          type: select
-          options:
-            - id: privateinternetaccess
-              label: Private Internet Access
-            - id: nordvpn
-              label: NordVPN
-            - id: mullvad
-              label: Mullvad
-            - id: surfshark
-              label: Surfshark
-            - id: protonvpn
-              label: ProtonVPN
-            - id: custom
-              label: Custom (OpenVPN)
-          defaultValue: privateinternetaccess
-        - id: OPENVPN_PROTOCOL
-          label: VPN Protocol
-          type: select
-          options:
-            - id: udp
-              label: UDP (Faster)
-            - id: tcp
-              label: TCP (More Reliable)
-          defaultValue: udp
-    - id: credentials
-      title: Credentials
-      description: Your VPN account login details.
-      fields:
-        - id: OPENVPN_USER
-          label: OpenVPN User
-          type: text
-          placeholder: "p1234567"
-        - id: OPENVPN_PASSWORD
-          label: OpenVPN Password
-          type: password
-          placeholder: "your-password"
-        - id: WIREGUARD_PRIVATE_KEY
-          label: WireGuard Private Key (optional)
-          type: password
-          placeholder: "your-wireguard-private-key"
-        - id: WIREGUARD_ADDRESSES
-          label: WireGuard IP Address (optional)
-          type: text
-          placeholder: "e.g. 10.2.0.5/32"
-    - id: connection
-      title: Server Connection
-      description: Choose which server region to connect to.
-      fields:
-        - id: SERVER_COUNTRIES
-          label: Country (e.g., Switzerland)
-          type: text
-          placeholder: "Switzerland"
-        - id: SERVER_CITIES
-          label: City (e.g., Zurich)
-          type: text
-          placeholder: "Zurich"
-# A list of required permissions for the app.
+  - title: VPN Configuration
+    description: Enter your VPN provider details here. The app will not work until this is configured.
+    groups:
+      - title: VPN Provider
+        description: Select your VPN provider and protocol.
+        fields:
+          - id: VPN_SERVICE_PROVIDER
+            label: VPN Provider
+            type: select
+            options:
+              - privateinternetaccess: Private Internet Access
+              - nordvpn: NordVPN
+              - mullvad: Mullvad
+              - surfshark: Surfshark
+              - protonvpn: ProtonVPN
+              - custom: Custom (OpenVPN)
+            default: privateinternetaccess
+          - id: OPENVPN_PROTOCOL
+            label: VPN Protocol
+            type: select
+            options:
+              - udp: UDP (Faster)
+              - tcp: TCP (More Reliable)
+            default: udp
+      - title: Credentials
+        description: Your VPN account login details.
+        fields:
+          - id: OPENVPN_USER
+            label: OpenVPN User
+            type: text
+            placeholder: p1234567
+          - id: OPENVPN_PASSWORD
+            label: OpenVPN Password
+            type: password
+            placeholder: your-password
+          - id: WIREGUARD_PRIVATE_KEY
+            label: WireGuard Private Key (optional)
+            type: password
+            placeholder: your-wireguard-private-key
+          - id: WIREGUARD_ADDRESSES
+            label: WireGuard IP Address (optional)
+            type: text
+            placeholder: e.g. 10.2.0.5/32
+      - title: Server Connection
+        description: Choose which server region to connect to.
+        fields:
+          - id: SERVER_COUNTRIES
+            label: Country (e.g., Switzerland)
+            type: text
+            placeholder: Switzerland
+          - id: SERVER_CITIES
+            label: City (e.g., Zurich)
+            type: text
+            placeholder: Zurich
 permissions:
-  - "data-dir"
-# Submission details.
+  - data-dir
 submission:
   website: https://www.qbittorrent.org/
   container_source: https://hotio.dev/containers/qbittorrent/
