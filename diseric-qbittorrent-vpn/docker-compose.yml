@@ -1,133 +1,24 @@
 version: "3.7"
 
 services:
-  main:
-    image: nginx:alpine
-    restart: on-failure
-    volumes:
-      - ${APP_DATA_DIR}/data:/usr/share/nginx/html
+  app_proxy:
     environment:
-      - APP_DATA_DIR=${APP_DATA_DIR}
-    command: >
-      sh -c "
-      mkdir -p /usr/share/nginx/html;
-      cat > /usr/share/nginx/html/index.html << 'EOF'
-      <!DOCTYPE html>
-      <html>
-      <head>
-          <title>qBittorrent VPN Setup</title>
-          <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">
-          <style>
-              body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; line-height: 1.6; }
-              .header { background: #007cba; color: white; padding: 20px; border-radius: 8px; text-align: center; margin-bottom: 20px; }
-              .step { margin: 20px 0; padding: 15px; border-left: 4px solid #007cba; background: #f8f9fa; border-radius: 0 5px 5px 0; }
-              .code { background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 5px; font-family: monospace; overflow-x: auto; }
-              .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 15px 0; }
-              .providers { display: grid; grid-template-columns: repeat(auto-fit, minospace(150px, 1fr)); gap: 10px; margin: 15px 0; }
-              .provider { background: #e9ecef; padding: 8px; border-radius: 3px; text-align: center; font-family: monospace; font-size: 0.9em; }
-          </style>
-      </head>
-      <body>
-          <div class=\"header\">
-              <h1>🔒 qBittorrent VPN Setup</h1>
-              <p>Secure torrenting with automatic VPN protection</p>
-          </div>
-          
-          <div class=\"warning\">
-              <strong>🔧 Setup Required:</strong> This guide will help you set up qBittorrent with VPN protection.
-              Your VPN credentials will be stored securely on your Umbrel device.
-          </div>
-          
-          <div class=\"step\">
-              <h3>📡 Step 1: SSH Access</h3>
-              <p>Connect to your Umbrel via SSH:</p>
-              <div class=\"code\">ssh umbrel@YOUR_UMBREL_IP</div>
-          </div>
-          
-          <div class=\"step\">
-              <h3>📁 Step 2: Create VPN Configuration</h3>
-              <p>Create your VPN configuration file:</p>
-              <div class=\"code\">mkdir -p ~/qbittorrent-vpn
-      cd ~/qbittorrent-vpn
+      APP_HOST: qbittorrent
+      APP_PORT: 8080
 
-      cat > vpn.env << 'VPNEOF'
-      VPN_SERVICE_PROVIDER=your_provider
-      VPN_TYPE=openvpn
-      OPENVPN_USER=your_username
-      OPENVPN_PASSWORD=your_password
-      SERVER_COUNTRIES=your_country
-      VPNEOF</div>
-          </div>
-          
-          <div class=\"step\">
-              <h3>🌐 Supported Providers</h3>
-              <div class=\"providers\">
-                  <div class=\"provider\">privateinternetaccess</div>
-                  <div class=\"provider\">nordvpn</div>
-                  <div class=\"provider\">mullvad</div>
-                  <div class=\"provider\">surfshark</div>
-                  <div class=\"provider\">protonvpn</div>
-                  <div class=\"provider\">expressvpn</div>
-              </div>
-          </div>
-          
-          <div class=\"step\">
-              <h3>🚀 Step 3: Start qBittorrent with VPN</h3>
-              <p>Create and start the containers:</p>
-              <div class=\"code\">cat > docker-compose.yml << 'COMPOSE_EOF'
-      version: '3.7'
-      services:
-        vpn:
-          image: qmcgaw/gluetun:latest
-          cap_add:
-            - NET_ADMIN
-          devices:
-            - /dev/net/tun:/dev/net/tun
-          ports:
-            - \"8080:8080\"
-            - \"6881:6881\"
-            - \"6881:6881/udp\"
-          volumes:
-            - ./gluetun:/gluetun
-          env_file:
-            - ./vpn.env
-          environment:
-            - FIREWALL_OUTBOUND_SUBNETS=192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
-            - FIREWALL_VPN_INPUT_PORTS=6881
-            - PUID=1000
-            - PGID=1000
-          restart: unless-stopped
-
-        qbittorrent:
-          image: lscr.io/linuxserver/qbittorrent:latest
-          network_mode: \"service:vpn\"
-          depends_on:
-            - vpn
-          volumes:
-            - ./config:/config
-            - ./downloads:/downloads
-          environment:
-            - PUID=1000
-            - PGID=1000
-            - WEBUI_PORT=8080
-          restart: unless-stopped
-      COMPOSE_EOF
-
-      # Start the services
-      docker-compose up -d</div>
-          </div>
-          
-          <div class=\"step\">
-              <h3>✅ Access qBittorrent</h3>
-              <p>Once started, access qBittorrent at: <strong>http://YOUR_UMBREL_IP:8080</strong></p>
-              <p>Default login: <code>admin</code> / <code>adminadmin</code></p>
-          </div>
-          
-          <p style=\"text-align: center; margin-top: 30px; color: #666;\">
-              🔒 All traffic will be routed through your VPN for complete privacy
-          </p>
-      </body>
-      </html>
-      EOF
-      
-      nginx -g 'daemon off;'"
+  qbittorrent:
+    image: hotio/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+      - WEBUI_PORTS=8080/tcp,8080/udp
+    volumes:
+      - ${APP_DATA_DIR}/data/config:/config
+      - ${APP_DATA_DIR}/data/downloads:/downloads
+    ports:
+      - 6881:6881
+      - 6881:6881/udp
+    restart: unless-stopped
