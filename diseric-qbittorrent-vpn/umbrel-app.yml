@@ -15,7 +15,7 @@ description: >-
   Supports many providers like PIA, NordVPN, Mullvad, and more.
 developer: The qBittorrent project
 author: diseric
-port: 8082
+port: 8081
 # This tells Umbrel to use the docker-compose.yml file for its setup.
 compose:
   file: docker-compose.yml
