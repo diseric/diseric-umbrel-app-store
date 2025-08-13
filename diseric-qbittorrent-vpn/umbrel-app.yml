@@ -13,7 +13,7 @@ description: >-
   Supports many providers like PIA, NordVPN, Mullvad, and more.
 developer: The qBittorrent project
 author: diseric
-port: 8090
+port: 8080
 compose:
   file: docker-compose.yml
 config:
