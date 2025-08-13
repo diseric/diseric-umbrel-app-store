@@ -46,7 +46,7 @@ services:
   # The qBittorrent container.
   qbittorrent:
     container_name: qbittorrent
-    image: ghcr.io/hotio/qbittorrent
+    image: lscr.io/linuxserver/qbittorrent:latest
     network_mode: "service:vpn"
     depends_on:
       - vpn
