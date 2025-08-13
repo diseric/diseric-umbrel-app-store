@@ -3,16 +3,16 @@ id: diseric-qbittorrent-vpn
 name: qBittorrent VPN 
 version: "4.6.7"
 category: files
-tagline: Feature-rich BitTorrent client with enhanced performance
+tagline: Official qBittorrent BitTorrent client
 description: >-
   qBittorrent is a free and open-source BitTorrent client that aims to provide
   an open-source software alternative to µTorrent.
   
-  This version uses the optimized Hotio container which includes:
-  • Regular updates and security patches
-  • Optimized performance
-  • Built-in VPN support capabilities
-  • Enhanced logging and monitoring
+  This is the official qBittorrent Docker image with:
+  • Official support and regular updates
+  • NoX (headless) version optimized for servers
+  • Built-in web interface
+  • Full qBittorrent feature set
   
   Features:
   • Web-based user interface
