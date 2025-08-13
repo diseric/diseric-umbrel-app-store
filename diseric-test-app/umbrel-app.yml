@@ -9,6 +9,6 @@ developer: diseric
 website: https://github.com
 repo: https://github.com/diseric/diseric-umbrel-app-store
 support: https://github.com/diseric/diseric-umbrel-app-store
-port: 80
+port: 8080
 submitter: diseric
 submission: https://github.com/diseric/diseric-umbrel-app-store
