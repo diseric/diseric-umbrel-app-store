@@ -13,64 +13,56 @@ description: >-
   Supports many providers like PIA, NordVPN, Mullvad, and more.
 developer: The qBittorrent project
 author: diseric
-port: 8080
+port: 8090
 compose:
   file: docker-compose.yml
-settings:
-  - title: VPN Configuration
-    description: Enter your VPN provider details here. The app will not work until this is configured.
-    groups:
-      - title: VPN Provider
-        description: Select your VPN provider and protocol.
-        fields:
-          - id: VPN_SERVICE_PROVIDER
-            label: VPN Provider
-            type: select
-            options:
-              - privateinternetaccess: Private Internet Access
-              - nordvpn: NordVPN
-              - mullvad: Mullvad
-              - surfshark: Surfshark
-              - protonvpn: ProtonVPN
-              - custom: Custom (OpenVPN)
-            default: privateinternetaccess
-          - id: OPENVPN_PROTOCOL
-            label: VPN Protocol
-            type: select
-            options:
-              - udp: UDP (Faster)
-              - tcp: TCP (More Reliable)
-            default: udp
-      - title: Credentials
-        description: Your VPN account login details.
-        fields:
-          - id: OPENVPN_USER
-            label: OpenVPN User
-            type: text
-            placeholder: p1234567
-          - id: OPENVPN_PASSWORD
-            label: OpenVPN Password
-            type: password
-            placeholder: your-password
-          - id: WIREGUARD_PRIVATE_KEY
-            label: WireGuard Private Key (optional)
-            type: password
-            placeholder: your-wireguard-private-key
-          - id: WIREGUARD_ADDRESSES
-            label: WireGuard IP Address (optional)
-            type: text
-            placeholder: e.g. 10.2.0.5/32
-      - title: Server Connection
-        description: Choose which server region to connect to.
-        fields:
-          - id: SERVER_COUNTRIES
-            label: Country (e.g., Switzerland)
-            type: text
-            placeholder: Switzerland
-          - id: SERVER_CITIES
-            label: City (e.g., Zurich)
-            type: text
-            placeholder: Zurich
+config:
+  - name: VPN Provider
+    id: VPN_SERVICE_PROVIDER
+    type: select
+    label: Choose your VPN provider
+    options:
+      - label: Private Internet Access
+        value: privateinternetaccess
+      - label: NordVPN
+        value: nordvpn
+      - label: Mullvad
+        value: mullvad
+      - label: Surfshark
+        value: surfshark
+      - label: ProtonVPN
+        value: protonvpn
+    default: privateinternetaccess
+    required: true
+  - name: VPN Protocol
+    id: OPENVPN_PROTOCOL
+    type: select
+    label: VPN Protocol
+    options:
+      - label: UDP (Faster)
+        value: udp
+      - label: TCP (More Reliable)
+        value: tcp
+    default: udp
+    required: true
+  - name: VPN Username
+    id: OPENVPN_USER
+    type: text
+    label: VPN Username
+    placeholder: Enter your VPN username
+    required: true
+  - name: VPN Password
+    id: OPENVPN_PASSWORD
+    type: password
+    label: VPN Password
+    placeholder: Enter your VPN password
+    required: true
+  - name: Server Country
+    id: SERVER_COUNTRIES
+    type: text
+    label: Server Country
+    placeholder: e.g. Switzerland
+    required: true
 permissions:
   - data-dir
 submission:
