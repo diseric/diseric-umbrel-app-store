@@ -6,7 +6,7 @@ services:
   app_proxy:
     environment:
       APP_HOST: vpn
-      APP_PORT: 8081
+      APP_PORT: 8080
 
   # The VPN container. All network traffic will go through here.
   vpn:
@@ -16,7 +16,7 @@ services:
     devices:
       - /dev/net/tun:/dev/net/tun
     ports:
-      - 8081:8081
+      - 8080:8080
     volumes:
       # Mapped to the app's specific data directory.
       - ${APP_DATA_DIR}/gluetun:/gluetun
@@ -58,6 +58,6 @@ services:
       - PUID=1000
       - UMASK=002
       - TZ=Etc/UTC
-      - WEBUI_PORTS=8081/tcp,8081/udp
+      - WEBUI_PORTS=8080/tcp,8080/udp
       - LIBTORRENT=v1
     restart: unless-stopped
