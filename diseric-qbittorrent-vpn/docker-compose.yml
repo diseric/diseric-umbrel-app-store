@@ -1,7 +1,6 @@
 # docker-compose.yml
 # This file defines the services that make up the app.
 # This is the full version including the VPN service.
-version: "3.7"
 services:
   # Umbrel's app proxy service - REQUIRED
   app_proxy:
@@ -38,53 +37,6 @@ services:
   # The qBittorrent container.
   qbittorrent:
     image: hotio/qbittorrent:latest
-    network_mode: "service:vpn"
-    depends_on:
-      - vpn
-    volumes:
-      # Mapped to the app's specific data directory.
-      - ${APP_DATA_DIR}/config:/config
-      - ${APP_DATA_DIR}/downloads:/data
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - WEBUI_PORT=8080
-    restart: unless-stopped# docker-compose.yml
-# This file defines the services that make up the app.
-# This is the full version including the VPN service.
-
-version: "3.7"
-
-services:
-  # The VPN container. All network traffic will go through here.
-  vpn:
-    image: qmcgaw/gluetun:latest
-    container_name: qbittorrent-vpn-gluetun
-    cap_add:
-      - NET_ADMIN
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    volumes:
-      # Mapped to the app's specific data directory.
-      - ${APP_DATA_DIR}/gluetun:/gluetun
-    environment:
-      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
-      - VPN_TYPE=${OPENVPN_PROTOCOL}
-      - OPENVPN_USER=${OPENVPN_USER}
-      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
-      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
-      - SERVER_COUNTRIES=${SERVER_COUNTRIES}
-      - SERVER_CITIES=${SERVER_CITIES}
-      - PUID=1000
-      - PGID=1000
-      - VPN_LAN_NETWORK=192.168.0.0/16
-    restart: unless-stopped
-
-  # The qBittorrent container.
-  qbittorrent:
-    image: hotio/qbittorrent:latest
-    container_name: qbittorrent-vpn-app
     network_mode: "service:vpn"
     depends_on:
       - vpn
