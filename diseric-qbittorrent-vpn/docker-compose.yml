@@ -1,51 +1,31 @@
-# docker-compose.yml
-# This file defines the services that make up the app.
-# This is the full version including the VPN service.
 services:
-  # Umbrel's app proxy service - REQUIRED
-  app_proxy:
+  app:
+    hostname: container-name.internal #
     environment:
-      APP_HOST: vpn
-      APP_PORT: 8080
-
-  # The VPN container. All network traffic will go through here.
-  vpn:
-    image: qmcgaw/gluetun:latest
+      - VPN_ENABLED=true #
+      - VPN_CONF=wg0 #
+      - VPN_PROVIDER=pia #
+      - VPN_LAN_NETWORK=192.168.1.0/24 #
+      - VPN_LAN_LEAK_ENABLED=false #
+      - VPN_EXPOSE_PORTS_ON_LAN #
+      - VPN_AUTO_PORT_FORWARD=true #
+      - VPN_AUTO_PORT_FORWARD_TO_PORTS= #
+      - VPN_FIREWALL_TYPE=auto #
+      - VPN_HEALTHCHECK_ENABLED=false #
+      - VPN_NAMESERVERS= #
+      - VPN_PIA_USER #
+      - VPN_PIA_PASS #
+      - VPN_PIA_PREFERRED_REGION #
+      - VPN_PIA_DIP_TOKEN=no #
+      - VPN_PIA_PORT_FORWARD_PERSIST=false #
+      - PRIVOXY_ENABLED=false #
+      - UNBOUND_ENABLED=false #
+      - UNBOUND_NAMESERVERS #
     cap_add:
       - NET_ADMIN
+    sysctls:
+      - net.ipv4.conf.all.src_valid_mark=1 #
+      - net.ipv6.conf.all.disable_ipv6=1 #
     devices:
-      - /dev/net/tun:/dev/net/tun
-    ports:
-      - 8080:8080
-    volumes:
-      # Mapped to the app's specific data directory.
-      - ${APP_DATA_DIR}/gluetun:/gluetun
-    environment:
-      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
-      - OPENVPN_PROTOCOL=${OPENVPN_PROTOCOL}
-      - OPENVPN_USER=${OPENVPN_USER}
-      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
-      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
-      - SERVER_COUNTRIES=${SERVER_COUNTRIES}
-      - SERVER_CITIES=${SERVER_CITIES}
-      - PUID=1000
-      - PGID=1000
-      - VPN_LAN_NETWORK=192.168.0.0/16
-    restart: unless-stopped
-
-  # The qBittorrent container.
-  qbittorrent:
-    image: linuxserver/qbittorrent
-    network_mode: "service:vpn"
-    depends_on:
-      - vpn
-    volumes:
-      # Mapped to the app's specific data directory.
-      - ${APP_DATA_DIR}/config:/config
-      - ${APP_DATA_DIR}/downloads:/data
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - WEBUI_PORT=8080
-    restart: unless-stopped
+      - /dev/net/tun:/dev/net/tun # OPTIONAL
+    ...
