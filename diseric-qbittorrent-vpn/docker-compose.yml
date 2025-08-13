@@ -1,15 +1,7 @@
 # docker-compose.yml
-# VERSION 8: Updated app-proxy image to use 'latest' tag to fix manifest error.
+# VERSION 9: Removed app_proxy service to let Umbrel OS manage it automatically.
 
 services:
-  # Umbrel's app proxy service - REQUIRED
-  app_proxy:
-    image: getumbrel/app-proxy:latest
-    environment:
-      APP_HOST: qbittorrent
-      APP_PORT: 8080
-    restart: unless-stopped
-
   # The VPN container
   vpn:
     image: qmcgaw/gluetun:latest
