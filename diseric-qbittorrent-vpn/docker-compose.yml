@@ -1,319 +1,203 @@
 services:
   app_proxy:
     environment:
-      APP_HOST: qbittorrent-manager
+      APP_HOST: setup
       APP_PORT: 8090
 
-  # Main service that manages setup and qBittorrent
-  qbittorrent-manager:
-    image: alpine:latest
-    container_name: qbittorrent-manager
+  setup:
+    image: nginx:alpine
+    container_name: qbittorrent-setup
     ports:
-      - 8090:8090
+      - 8090:80
     volumes:
-      - ${APP_DATA_DIR}:/app-data
-    environment:
-      - APP_DATA_DIR=${APP_DATA_DIR}
+      - ${APP_DATA_DIR}:/data
     command: >
       sh -c "
-      # Install required packages
-      apk add --no-cache nginx curl docker-cli;
+      mkdir -p /usr/share/nginx/html;
       
-      # Create web directory
-      mkdir -p /var/www/html;
-      
-      # Check if VPN is configured
-      if [ -f /app-data/vpn.env ]; then
-        echo '=== VPN Configuration Found - Starting qBittorrent Mode ===';
-        
-        # Check if VPN container is running
-        VPN_RUNNING=$$(docker ps --filter 'name=qbittorrent-vpn' --format '{{.Names}}' 2>/dev/null || echo '');
-        
-        if [ -z \"$$VPN_RUNNING\" ]; then
-          echo 'Starting VPN container...';
-          cd /app-data;
-          
-          # Create temporary docker-compose for VPN and qBittorrent
-          cat > /tmp/qbt-compose.yml << 'COMPOSE_EOF'
-      version: '3.8'
-      services:
-        vpn:
-          image: qmcgaw/gluetun:latest
-          container_name: qbittorrent-vpn
-          cap_add:
-            - NET_ADMIN
-          devices:
-            - /dev/net/tun:/dev/net/tun
-          ports:
-            - 8090:8090
-            - 6881:6881
-            - 6881:6881/udp
-          volumes:
-            - /app-data/gluetun:/gluetun
-          env_file:
-            - /app-data/vpn.env
-          environment:
-            - FIREWALL_OUTBOUND_SUBNETS=192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
-            - FIREWALL_VPN_INPUT_PORTS=6881
-            - HEALTH_SERVER_ADDRESS=:9999
-            - LOG_LEVEL=info
-            - PUID=1000
-            - PGID=1000
-          restart: unless-stopped
-          healthcheck:
-            test: [\"CMD-SHELL\", \"wget --no-verbose --tries=1 --spider http://localhost:9999 || exit 1\"]
-            interval: 30s
-            timeout: 10s
-            retries: 5
-            start_period: 60s
-        
-        qbittorrent:
-          image: lscr.io/linuxserver/qbittorrent:latest
-          container_name: qbittorrent-app
-          network_mode: \"service:vpn\"
-          depends_on:
-            vpn:
-              condition: service_healthy
-          volumes:
-            - /app-data/config:/config
-            - /app-data/downloads:/downloads
-          environment:
-            - PUID=1000
-            - PGID=1000
-            - TZ=Etc/UTC
-            - WEBUI_PORT=8090
-          restart: unless-stopped
-      COMPOSE_EOF
-          
-          # Start VPN and qBittorrent
-          docker-compose -f /tmp/qbt-compose.yml up -d;
-          
-          # Wait for qBittorrent to be ready
-          echo 'Waiting for qBittorrent to start...';
-          for i in $$(seq 1 60); do
-            if curl -s http://localhost:8090 >/dev/null 2>&1; then
-              echo 'qBittorrent is ready!';
-              break;
-            fi;
-            sleep 2;
-          done;
-        fi;
-        
-        # Proxy to qBittorrent
-        echo 'Proxying to qBittorrent...';
-        cat > /etc/nginx/nginx.conf << 'NGINX_EOF'
-      events { worker_connections 1024; }
-      http {
-        upstream qbittorrent {
-          server localhost:8090;
-        }
-        server {
-          listen 8090;
-          location / {
-            proxy_pass http://qbittorrent;
-            proxy_set_header Host \$$host;
-            proxy_set_header X-Real-IP \$$remote_addr;
-            proxy_set_header X-Forwarded-For \$$proxy_add_x_forwarded_for;
-            proxy_set_header X-Forwarded-Proto \$$scheme;
-          }
-        }
-      }
-      NGINX_EOF
-        
-      else
-        echo '=== Setup Mode - VPN Configuration Required ===';
-        
-        # Create setup page
-        cat > /var/www/html/index.html << 'HTML_EOF'
+      if [ -f /data/vpn.env ]; then
+        echo 'VPN configured - showing status page';
+        cat > /usr/share/nginx/html/index.html << 'EOF'
       <!DOCTYPE html>
-      <html lang=\"en\">
+      <html>
       <head>
-          <meta charset=\"UTF-8\">
-          <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">
-          <title>qBittorrent VPN Setup</title>
+          <title>qBittorrent VPN - Configured</title>
           <style>
-              * { margin: 0; padding: 0; box-sizing: border-box; }
-              body { 
-                  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                  min-height: 100vh; padding: 20px; color: #333;
-              }
-              .container { 
-                  max-width: 800px; margin: 0 auto; 
-                  background: white; border-radius: 15px; 
-                  box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden;
-              }
-              .header { 
-                  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                  color: white; padding: 30px; text-align: center;
-              }
-              .header h1 { font-size: 2.5em; margin-bottom: 10px; }
-              .header p { font-size: 1.2em; opacity: 0.9; }
-              .content { padding: 40px; }
-              .warning { 
-                  background: linear-gradient(135deg, #ff9a56 0%, #ffad56 100%);
-                  color: white; padding: 20px; border-radius: 10px; 
-                  margin-bottom: 30px; text-align: center;
-              }
-              .step { 
-                  margin: 30px 0; padding: 25px; 
-                  border-left: 5px solid #667eea; 
-                  background: #f8f9fa; border-radius: 0 10px 10px 0;
-              }
-              .step h3 { color: #667eea; margin-bottom: 15px; font-size: 1.3em; }
-              .code { 
-                  background: #2d3748; color: #e2e8f0; 
-                  padding: 20px; border-radius: 8px; 
-                  font-family: 'Courier New', monospace; 
-                  overflow-x: auto; margin: 15px 0;
-                  border: 1px solid #4a5568;
-              }
-              .providers { 
-                  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
-                  gap: 15px; margin: 20px 0;
-              }
-              .provider { 
-                  background: #f0f4f8; padding: 15px; 
-                  border-radius: 8px; text-align: center;
-                  border: 2px solid transparent; transition: all 0.3s;
-              }
-              .provider:hover { border-color: #667eea; transform: translateY(-2px); }
-              .footer { 
-                  background: #f8f9fa; padding: 20px; 
-                  text-align: center; color: #666; 
-                  border-top: 1px solid #e2e8f0;
-              }
-              .highlight { color: #667eea; font-weight: bold; }
-              .security-note { 
-                  background: #e6fffa; border: 1px solid #81e6d9; 
-                  padding: 15px; border-radius: 8px; margin: 20px 0;
-              }
-              .checkmark { color: #48bb78; font-weight: bold; }
+              body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+              .success { background: #d4edda; border: 1px solid #c3e6cb; padding: 20px; border-radius: 5px; }
+              .instructions { background: #f8f9fa; padding: 20px; border-radius: 5px; margin: 20px 0; }
+              .code { background: #f4f4f4; padding: 10px; border-radius: 3px; font-family: monospace; }
           </style>
       </head>
       <body>
-          <div class=\"container\">
-              <div class=\"header\">
-                  <h1>🔒 qBittorrent VPN Setup</h1>
-                  <p>Secure BitTorrent client with automatic VPN protection</p>
-              </div>
+          <h1>✅ VPN Configuration Found!</h1>
+          <div class=\"success\">
+              <h3>Your VPN is configured and ready to use.</h3>
+              <p>To start qBittorrent with VPN protection, you need to manually start the containers.</p>
+          </div>
+          
+          <div class=\"instructions\">
+              <h3>📋 Next Steps:</h3>
+              <ol>
+                  <li>SSH into your Umbrel</li>
+                  <li>Navigate to the app directory</li>
+                  <li>Start the VPN and qBittorrent containers</li>
+              </ol>
               
-              <div class=\"content\">
-                  <div class=\"warning\">
-                      <h3>🔧 Setup Required</h3>
-                      <p>Configure your VPN credentials to start using qBittorrent with complete privacy protection.</p>
-                  </div>
-                  
-                  <div class=\"security-note\">
-                      <strong>🛡️ Privacy Guarantee:</strong> Your VPN credentials are stored locally on your Umbrel device only. 
-                      They are never transmitted to any external servers or stored in any cloud service.
-                  </div>
-                  
-                  <div class=\"step\">
-                      <h3>📡 Step 1: Connect to Your Umbrel</h3>
-                      <p>SSH into your Umbrel device:</p>
-                      <div class=\"code\">ssh umbrel@<span class=\"highlight\">YOUR_UMBREL_IP</span></div>
-                      <p><small>Replace YOUR_UMBREL_IP with your actual Umbrel device IP address</small></p>
-                  </div>
-                  
-                  <div class=\"step\">
-                      <h3>⚙️ Step 2: Create VPN Configuration</h3>
-                      <p>Create your secure VPN configuration file:</p>
-                      <div class=\"code\">cat > ~/umbrel/app-data/diseric-qbittorrent-vpn/vpn.env << 'VPNEOF'
+              <h4>Commands to run:</h4>
+              <div class=\"code\">
+                  cd ~/umbrel/app-data/diseric-qbittorrent-vpn<br>
+                  <br>
+                  # Create docker-compose for VPN + qBittorrent<br>
+                  cat > qbt-vpn.yml << 'COMPOSE_EOF'<br>
+      services:<br>
+        vpn:<br>
+          image: qmcgaw/gluetun:latest<br>
+          cap_add:<br>
+            - NET_ADMIN<br>
+          devices:<br>
+            - /dev/net/tun:/dev/net/tun<br>
+          ports:<br>
+            - 8090:8090<br>
+            - 6881:6881<br>
+            - 6881:6881/udp<br>
+          volumes:<br>
+            - ./gluetun:/gluetun<br>
+          env_file:<br>
+            - ./vpn.env<br>
+          environment:<br>
+            - FIREWALL_OUTBOUND_SUBNETS=192.168.0.0/16,172.16.0.0/12,10.0.0.0/8<br>
+            - FIREWALL_VPN_INPUT_PORTS=6881<br>
+            - HEALTH_SERVER_ADDRESS=:9999<br>
+            - PUID=1000<br>
+            - PGID=1000<br>
+          restart: unless-stopped<br>
+          healthcheck:<br>
+            test: [\"CMD-SHELL\", \"wget --no-verbose --tries=1 --spider http://localhost:9999 || exit 1\"]<br>
+            interval: 30s<br>
+            timeout: 10s<br>
+            retries: 3<br>
+            start_period: 30s<br>
+      <br>
+        qbittorrent:<br>
+          image: lscr.io/linuxserver/qbittorrent:latest<br>
+          network_mode: \"service:vpn\"<br>
+          depends_on:<br>
+            vpn:<br>
+              condition: service_healthy<br>
+          volumes:<br>
+            - ./config:/config<br>
+            - ./downloads:/downloads<br>
+          environment:<br>
+            - PUID=1000<br>
+            - PGID=1000<br>
+            - TZ=Etc/UTC<br>
+            - WEBUI_PORT=8090<br>
+          restart: unless-stopped<br>
+      COMPOSE_EOF<br>
+                  <br>
+                  # Start the services<br>
+                  docker-compose -f qbt-vpn.yml up -d
+              </div>
+          </div>
+          
+          <p><strong>After running these commands, qBittorrent will be available at this same URL with full VPN protection!</strong></p>
+      </body>
+      </html>
+      EOF
+      else
+        echo 'No VPN config - showing setup page';
+        cat > /usr/share/nginx/html/index.html << 'EOF'
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <title>qBittorrent VPN Setup</title>
+          <style>
+              body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; padding: 20px; line-height: 1.6; }
+              .header { background: #007cba; color: white; padding: 30px; border-radius: 10px; text-align: center; margin-bottom: 30px; }
+              .step { margin: 25px 0; padding: 20px; border-left: 5px solid #007cba; background: #f8f9fa; border-radius: 0 8px 8px 0; }
+              .code { background: #2d3748; color: #e2e8f0; padding: 15px; border-radius: 5px; font-family: monospace; overflow-x: auto; margin: 10px 0; }
+              .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+              .providers { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 15px 0; }
+              .provider { background: #e9ecef; padding: 10px; border-radius: 5px; text-align: center; font-family: monospace; }
+              .highlight { color: #007cba; font-weight: bold; }
+          </style>
+      </head>
+      <body>
+          <div class=\"header\">
+              <h1>🔒 qBittorrent VPN Setup</h1>
+              <p>Secure BitTorrent client with automatic VPN routing</p>
+          </div>
+          
+          <div class=\"warning\">
+              <strong>🔧 Setup Required:</strong> Configure your VPN credentials to start using qBittorrent with complete privacy protection.
+              Your credentials are stored locally and never transmitted anywhere.
+          </div>
+          
+          <div class=\"step\">
+              <h3>📡 Step 1: Connect to Your Umbrel</h3>
+              <p>SSH into your Umbrel device:</p>
+              <div class=\"code\">ssh umbrel@<span class=\"highlight\">YOUR_UMBREL_IP</span></div>
+          </div>
+          
+          <div class=\"step\">
+              <h3>⚙️ Step 2: Create VPN Configuration</h3>
+              <p>Create your VPN configuration file:</p>
+              <div class=\"code\">cat > ~/umbrel/app-data/diseric-qbittorrent-vpn/vpn.env << 'VPNEOF'
       VPN_SERVICE_PROVIDER=<span class=\"highlight\">your_provider</span>
       VPN_TYPE=openvpn
       OPENVPN_USER=<span class=\"highlight\">your_vpn_username</span>
       OPENVPN_PASSWORD=<span class=\"highlight\">your_vpn_password</span>
-      SERVER_COUNTRIES=<span class=\"highlight\">your_preferred_country</span>
+      SERVER_COUNTRIES=<span class=\"highlight\">your_country</span>
       VPNEOF</div>
-                      <p><strong>Replace the highlighted values with your actual VPN details:</strong></p>
-                      <ul style=\"margin: 15px 0; padding-left: 30px;\">
-                          <li><code>your_provider</code> - Choose from supported providers below</li>
-                          <li><code>your_vpn_username</code> - Your VPN account username</li>
-                          <li><code>your_vpn_password</code> - Your VPN account password</li>
-                          <li><code>your_preferred_country</code> - Server country (e.g., Switzerland, Netherlands)</li>
-                      </ul>
-                  </div>
-                  
-                  <div class=\"step\">
-                      <h3>🌐 Supported VPN Providers</h3>
-                      <div class=\"providers\">
-                          <div class=\"provider\">
-                              <strong>privateinternetaccess</strong><br>
-                              <small>Private Internet Access</small>
-                          </div>
-                          <div class=\"provider\">
-                              <strong>nordvpn</strong><br>
-                              <small>NordVPN</small>
-                          </div>
-                          <div class=\"provider\">
-                              <strong>mullvad</strong><br>
-                              <small>Mullvad VPN</small>
-                          </div>
-                          <div class=\"provider\">
-                              <strong>surfshark</strong><br>
-                              <small>Surfshark</small>
-                          </div>
-                          <div class=\"provider\">
-                              <strong>protonvpn</strong><br>
-                              <small>ProtonVPN</small>
-                          </div>
-                          <div class=\"provider\">
-                              <strong>expressvpn</strong><br>
-                              <small>ExpressVPN</small>
-                          </div>
-                      </div>
-                  </div>
-                  
-                  <div class=\"step\">
-                      <h3>🔄 Step 3: Restart the App</h3>
-                      <p>After creating the configuration file:</p>
-                      <ol style=\"margin: 15px 0; padding-left: 30px; line-height: 1.8;\">
-                          <li>Go back to your Umbrel dashboard</li>
-                          <li>Find this qBittorrent app</li>
-                          <li>Stop and restart the app</li>
-                          <li>Wait for the VPN to connect (may take 1-2 minutes)</li>
-                          <li>Access qBittorrent securely through the VPN!</li>
-                      </ol>
-                  </div>
-                  
-                  <div class=\"step\">
-                      <h3>✅ What Happens Next</h3>
-                      <p><span class=\"checkmark\">✓</span> VPN connection will be established automatically<br>
-                      <span class=\"checkmark\">✓</span> qBittorrent will start and route all traffic through VPN<br>
-                      <span class=\"checkmark\">✓</span> Your real IP address will be completely hidden<br>
-                      <span class=\"checkmark\">✓</span> Kill switch prevents any IP leaks<br>
-                      <span class=\"checkmark\">✓</span> You can access qBittorrent at this same URL</p>
-                  </div>
+              
+              <h4>🌐 Supported VPN Providers:</h4>
+              <div class=\"providers\">
+                  <div class=\"provider\">privateinternetaccess</div>
+                  <div class=\"provider\">nordvpn</div>
+                  <div class=\"provider\">mullvad</div>
+                  <div class=\"provider\">surfshark</div>
+                  <div class=\"provider\">protonvpn</div>
+                  <div class=\"provider\">expressvpn</div>
+                  <div class=\"provider\">cyberghost</div>
+                  <div class=\"provider\">ipvanish</div>
               </div>
               
-              <div class=\"footer\">
-                  <p>🔒 <strong>Security Note:</strong> All credentials are stored locally and encrypted on your device</p>
-                  <p><small>Need help? Check the Gluetun documentation for provider-specific setup guides</small></p>
-              </div>
+              <p><strong>Example configuration:</strong></p>
+              <div class=\"code\">VPN_SERVICE_PROVIDER=privateinternetaccess
+      VPN_TYPE=openvpn
+      OPENVPN_USER=p1234567
+      OPENVPN_PASSWORD=mypassword123
+      SERVER_COUNTRIES=Switzerland</div>
           </div>
+          
+          <div class=\"step\">
+              <h3>🔄 Step 3: Restart This App</h3>
+              <p>After creating the configuration file:</p>
+              <ol>
+                  <li>Go to your Umbrel dashboard</li>
+                  <li>Stop this qBittorrent app</li>
+                  <li>Start it again</li>
+                  <li>Follow the instructions on the next page</li>
+              </ol>
+          </div>
+          
+          <div class=\"step\">
+              <h3>✅ What You Get</h3>
+              <p>• Complete IP address protection<br>
+              • Kill switch prevents leaks<br>
+              • All torrent traffic routed through VPN<br>
+              • Support for 50+ VPN providers<br>
+              • Easy configuration management</p>
+          </div>
+          
+          <p style=\"text-align: center; margin-top: 30px; color: #666;\">
+              🔒 <strong>Privacy First:</strong> All credentials stored locally on your device
+          </p>
       </body>
       </html>
-      HTML_EOF
-        
-        # Configure nginx for setup page
-        cat > /etc/nginx/nginx.conf << 'NGINX_EOF'
-      events { worker_connections 1024; }
-      http {
-        include /etc/nginx/mime.types;
-        server {
-          listen 8090;
-          root /var/www/html;
-          index index.html;
-          location / {
-            try_files \$$uri \$$uri/ =404;
-          }
-        }
-      }
-      NGINX_EOF
+      EOF
       fi;
       
-      # Start nginx
       nginx -g 'daemon off;'"
     restart: unless-stopped
-    depends_on: []
