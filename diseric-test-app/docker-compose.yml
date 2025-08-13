@@ -1,0 +1,11 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: web
+      APP_PORT: 8080
+
+  web:
+    image: nginx:alpine
+    restart: on-failure
