@@ -3,15 +3,33 @@ id: diseric-qbittorrent-vpn
 name: qBittorrent with VPN
 version: "4.6.5"
 category: Files
-tagline: A feature-rich BitTorrent client routed through a VPN
+tagline: Secure BitTorrent client with automatic VPN routing
 description: >-
-  qBittorrent with automatic VPN routing via Gluetun.
+  qBittorrent is a free and open-source BitTorrent client that automatically
+  routes all traffic through a VPN connection powered by Gluetun.
   
-  🔧 SETUP REQUIRED: After installation, open the app to configure your VPN credentials.
-  The app will guide you through VPN setup before starting the torrent client.
+  🔒 PRIVACY FIRST: All torrent traffic is routed through your VPN to protect your identity.
   
-  Supported providers: Private Internet Access, NordVPN, Mullvad, Surfshark, ProtonVPN.
-developer: The qBittorrent project  
+  📋 SETUP REQUIRED: After installation, you'll need to configure your VPN credentials
+  through a simple setup process. Your credentials are stored securely on your device
+  and never transmitted anywhere else.
+  
+  ✅ SUPPORTED VPN PROVIDERS:
+  • Private Internet Access (PIA)
+  • NordVPN
+  • Mullvad
+  • Surfshark
+  • ProtonVPN
+  • ExpressVPN
+  • CyberGhost
+  • And many more...
+  
+  🛡️ SECURITY FEATURES:
+  • Kill switch prevents IP leaks if VPN disconnects
+  • Firewall blocks non-VPN traffic
+  • Health monitoring ensures VPN is always connected
+  • No DNS leaks - all traffic routed through VPN
+developer: The qBittorrent project
 author: diseric
 port: 8090
 compose:
