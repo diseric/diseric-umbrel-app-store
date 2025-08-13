@@ -1,10 +1,10 @@
 # docker-compose.yml
-# VERSION 7: Corrected invisible characters causing YAML parsing errors.
+# VERSION 8: Updated app-proxy image to use 'latest' tag to fix manifest error.
 
 services:
   # Umbrel's app proxy service - REQUIRED
   app_proxy:
-    image: getumbrel/app-proxy:v1.1.0
+    image: getumbrel/app-proxy:latest
     environment:
       APP_HOST: qbittorrent
       APP_PORT: 8080
