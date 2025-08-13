@@ -1,50 +1,69 @@
-# docker-compose.yml
-# VERSION 9: Removed app_proxy service to let Umbrel OS manage it automatically.
-
 services:
-  # The VPN container
+  # Umbrel's app proxy - required for all apps
+  app_proxy:
+    environment:
+      APP_HOST: vpn
+      APP_PORT: 8090
+
+  # VPN container - all traffic routes through here
   vpn:
     image: qmcgaw/gluetun:latest
-    container_name: qbittorrent-vpn-gluetun
+    container_name: qbittorrent-vpn
     cap_add:
       - NET_ADMIN
     devices:
       - /dev/net/tun:/dev/net/tun
     ports:
-      - "6881:6881/tcp"
-      - "6881:6881/udp"
+      # Expose qBittorrent web UI port
+      - 8090:8090
+      # Expose qBittorrent connection port
+      - 6881:6881
+      - 6881:6881/udp
     volumes:
       - ${APP_DATA_DIR}/gluetun:/gluetun
     environment:
+      # VPN Configuration from user form
       - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
-      - VPN_TYPE=${OPENVPN_PROTOCOL}
+      - VPN_TYPE=${VPN_TYPE:-openvpn}
       - OPENVPN_USER=${OPENVPN_USER}
       - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
-      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
       - SERVER_COUNTRIES=${SERVER_COUNTRIES}
       - SERVER_CITIES=${SERVER_CITIES}
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      
+      # Security and networking
+      - FIREWALL_OUTBOUND_SUBNETS=192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
+      - FIREWALL_VPN_INPUT_PORTS=6881
+      
+      # Health check and logging
+      - HEALTH_SERVER_ADDRESS=:9999
+      - LOG_LEVEL=info
+      
+      # User permissions
       - PUID=1000
       - PGID=1000
-      - VPN_LAN_NETWORK=192.168.0.0/16
-      - VPN_PORT_FORWARDING=on
-      - HTTP_CONTROL_SERVER_PORT=disabled
-      - DNS_ADDRESS=off
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9999"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
-  # The qBittorrent container
+  # qBittorrent container - routes through VPN
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent-app
     network_mode: "service:vpn"
     depends_on:
-      - vpn
+      vpn:
+        condition: service_healthy
     volumes:
       - ${APP_DATA_DIR}/config:/config
-      - ${APP_DATA_DIR}/downloads:/data
+      - ${APP_DATA_DIR}/downloads:/downloads
     environment:
       - PUID=1000
       - PGID=1000
       - TZ=Etc/UTC
-      - WEBUI_PORT=8080
+      - WEBUI_PORT=8090
     restart: unless-stopped
