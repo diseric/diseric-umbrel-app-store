@@ -1,70 +1,60 @@
 # docker-compose.yml
 # This file defines the services that make up the app.
-# VERSION 6: Adapted from user's new file, with corrections for Umbrel.
-
-version: "3.7"
-
+# This is the full version including the VPN service.
 services:
-  # Umbrel's app proxy service - REQUIRED
-  app_proxy:
-    image: getumbrel/app-proxy:v1.1.0
-    environment:
-      # The proxy will connect to the qbittorrent container...
-      APP_HOST: qbittorrent
-      # ...on its internal web UI port.
-      APP_PORT: 8080
-    restart: unless-stopped
-
-  # The VPN container. All network traffic will go through here.
-  vpn:
-    image: qmcgaw/gluetun:latest
-    container_name: qbittorrent-vpn-gluetun
-    cap_add:
-      - NET_ADMIN
-    devices:
-      - /dev/net/tun:/dev/net/tun
-    ports:
-      # Port for BitTorrent traffic.
-      - "6881:6881/tcp"
-      - "6881:6881/udp"
-    volumes:
-      # Mapped to the app's specific data directory.
-      - ${APP_DATA_DIR}/gluetun:/gluetun
-    environment:
-      # Mapped from the umbrel-app.yml settings form
-      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
-      - VPN_TYPE=${OPENVPN_PROTOCOL}
-      - OPENVPN_USER=${OPENVPN_USER}
-      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
-      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
-      - SERVER_COUNTRIES=${SERVER_COUNTRIES}
-      - SERVER_CITIES=${SERVER_CITIES}
-      # Standard settings
-      - PUID=1000
-      - PGID=1000
-      - VPN_LAN_NETWORK=192.168.0.0/16
-      - VPN_PORT_FORWARDING=on
-      # Disable internal services that cause port conflicts
-      - HTTP_CONTROL_SERVER_PORT=disabled
-      - DNS_ADDRESS=off
-    restart: unless-stopped
-
-  # The qBittorrent container.
-  qbittorrent:
-    image: lscr.io/linuxserver/qbittorrent:latest
-    container_name: qbittorrent-app
-    network_mode: "service:vpn"
-    depends_on:
-      - vpn
-    volumes:
-      # Mapped to the app's specific data directory.
-      - ${APP_DATA_DIR}/config:/config
-      - ${APP_DATA_DIR}/downloads:/data
-    environment:
-      - PUID=1000
-      - PGID=1000
-      - TZ=Etc/UTC
-      # The internal port for the Web UI. The app_proxy handles external access.
-      - WEBUI_PORT=8080
-    restart: unless-stopped
+  # Umbrel's app proxy service - REQUIRED
+  app_proxy:
+    environment:
+      APP_HOST: vpn
+      APP_PORT: 8080
+  # The VPN container. All network traffic will go through here.
+  vpn:
+    image: qmcgaw/gluetun:latest
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    ports:
+      - 8090:8090
+    volumes:
+      # Mapped to the app's specific data directory.
+      - ${APP_DATA_DIR}/gluetun:/gluetun
+    environment:
+      - VPN_ENABLED=true #
+      - VPN_CONF=wg0 #
+      - VPN_PROVIDER=pia #
+      - VPN_LAN_NETWORK=192.168.1.0/24 #
+      - VPN_LAN_LEAK_ENABLED=false #
+      - VPN_EXPOSE_PORTS_ON_LAN #
+      - VPN_AUTO_PORT_FORWARD=true #
+      - VPN_AUTO_PORT_FORWARD_TO_PORTS= #
+      - VPN_FIREWALL_TYPE=auto #
+      - VPN_HEALTHCHECK_ENABLED=false #
+      - VPN_NAMESERVERS= #
+      - VPN_PIA_USER #
+      - VPN_PIA_PASS #
+      - VPN_PIA_PREFERRED_REGION #
+      - VPN_PIA_DIP_TOKEN=no #
+      - VPN_PIA_PORT_FORWARD_PERSIST=false #
+      - PRIVOXY_ENABLED=false #
+      - UNBOUND_ENABLED=false #
+      - UNBOUND_NAMESERVERS #
+    restart: unless-stopped
+  # The qBittorrent container.
+  qbittorrent:
+    container_name: qbittorrent
+    image: lscr.io/linuxserver/qbittorrent:latest
+    network_mode: "service:vpn"
+    depends_on:
+      - vpn
+    volumes:
+      # Mapped to the app's specific data directory.
+      - ${APP_DATA_DIR}/config:/config
+      - ${APP_DATA_DIR}/downloads:/data
+    environment:
+      - PUID=1000
+      - UMASK=002
+      - TZ=Etc/UTC
+      - WEBUI_PORTS=8090/tcp,8090/udp
+      - LIBTORRENT=v1
+    restart: unless-stopped
