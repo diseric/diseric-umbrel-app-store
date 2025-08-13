@@ -1,40 +1,41 @@
 manifestVersion: 1
-id: diseric-qbittorrent-vpn
-name: qBittorrent VPN 
+id: qbittorrent-vpn
+name: qBittorrent with VPN
 version: "4.6.7"
 category: files
-tagline: Official qBittorrent BitTorrent client
+tagline: qBittorrent with automatic VPN protection
 description: >-
-  qBittorrent is a free and open-source BitTorrent client that aims to provide
-  an open-source software alternative to µTorrent.
+  qBittorrent with built-in VPN routing powered by Gluetun.
+  All torrent traffic is automatically routed through your VPN connection
+  to protect your privacy and identity.
   
-  This is the official qBittorrent Docker image with:
-  • Official support and regular updates
-  • NoX (headless) version optimized for servers
-  • Built-in web interface
-  • Full qBittorrent feature set
+  🔒 Privacy Features:
+  • All traffic routed through VPN
+  • Kill switch prevents IP leaks
+  • Support for 50+ VPN providers
+  • Automatic connection monitoring
   
-  Features:
-  • Web-based user interface
-  • Advanced RSS support with download filters
-  • Bandwidth scheduler
-  • IP filtering (eMule & PeerGuardian format compatible)
-  • IPv6 compliant
-  • UPnP / NAT-PMP port forwarding support
-  • Available in 70+ languages
-  • Torrent creation tool
-  • Sequential downloading
+  📋 Setup Required:
+  After installation, configure your VPN credentials in the app settings.
   
-  Default login: admin / adminadmin
-developer: qBittorrent Team
+  Supported VPN providers:
+  • Private Internet Access (PIA)
+  • NordVPN
+  • Mullvad
+  • Surfshark
+  • ProtonVPN
+  • ExpressVPN
+  • And many more...
+  
+  Default qBittorrent login: admin / adminadmin
+developer: qBittorrent Team + Gluetun
 website: https://www.qbittorrent.org/
 repo: https://github.com/qbittorrent/qBittorrent
-support: https://github.com/qbittorrent/qBittorrent/issues
+support: https://github.com/qdm12/gluetun
 port: 8080
 gallery:
   - 1.jpg
   - 2.jpg
-  - 3.jpg
 path: ""
 defaultUsername: "admin"
 defaultPassword: "adminadmin"
