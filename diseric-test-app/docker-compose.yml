@@ -1,11 +1,11 @@
-version: "3.7"
-
 services:
-  app_proxy:
-    environment:
-      APP_HOST: web
-      APP_PORT: 8080
-
-  web:
+  main:
     image: nginx:alpine
     restart: on-failure
+    stop_grace_period: 1m
+    volumes:
+      - ${APP_DATA_DIR}/data:/usr/share/nginx/html
+    environment:
+      - APP_DOMAIN=${APP_DOMAIN}
+      - APP_HOST=main
+      - APP_PORT=80

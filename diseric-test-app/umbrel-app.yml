@@ -1,14 +1,24 @@
+
 manifestVersion: 1
 id: diseric-test-app
 name: Test App
 version: "1.0.0"
 category: files
 tagline: Simple test application
-description: A simple test app to verify the app store works
+description: >-
+  A simple test app to verify the app store works properly.
+  This is just a basic nginx container for testing purposes.
 developer: diseric
-website: https://github.com
+website: https://github.com/diseric/diseric-umbrel-app-store
+dependencies: []
 repo: https://github.com/diseric/diseric-umbrel-app-store
-support: https://github.com/diseric/diseric-umbrel-app-store
-port: 8080
+support: https://github.com/diseric/diseric-umbrel-app-store/issues
+port: 8088
+gallery: []
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+releaseNotes: >-
+  Initial test app release
 submitter: diseric
 submission: https://github.com/diseric/diseric-umbrel-app-store
