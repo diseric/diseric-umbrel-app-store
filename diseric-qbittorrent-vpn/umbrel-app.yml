@@ -3,69 +3,78 @@ id: diseric-qbittorrent-vpn
 name: qBittorrent with VPN
 version: "4.6.5"
 category: Files
-tagline: A feature-rich BitTorrent client routed through a VPN.
+tagline: A feature-rich BitTorrent client routed through a VPN
 description: >-
-  qBittorrent is a free and open-source BitTorrent client.
-  This package automatically routes all of qBittorrent's traffic through a
-  built-in VPN client powered by Gluetun. This enhances your privacy and
-  security by hiding your IP address.
-  You must configure your VPN provider in the settings before starting the app.
-  Supports many providers like PIA, NordVPN, Mullvad, and more.
+  qBittorrent is a free and open-source BitTorrent client that automatically
+  routes all traffic through a VPN connection powered by Gluetun.
+  This ensures your downloads are private and secure.
+  
+  ⚠️ You must configure your VPN provider settings before the app will work.
+  
+  Supported VPN providers include Private Internet Access, NordVPN, Mullvad,
+  Surfshark, ProtonVPN, and many others.
 developer: The qBittorrent project
 author: diseric
-port: 8080
+port: 8090
 compose:
   file: docker-compose.yml
-config:
-  - name: VPN Provider
-    id: VPN_SERVICE_PROVIDER
-    type: select
-    label: Choose your VPN provider
-    options:
-      - label: Private Internet Access
-        value: privateinternetaccess
-      - label: NordVPN
-        value: nordvpn
-      - label: Mullvad
-        value: mullvad
-      - label: Surfshark
-        value: surfshark
-      - label: ProtonVPN
-        value: protonvpn
-    default: privateinternetaccess
+form:
+  - type: select
+    varName: VPN_SERVICE_PROVIDER
+    label: VPN Provider
     required: true
-  - name: VPN Protocol
-    id: OPENVPN_PROTOCOL
-    type: select
+    options:
+      privateinternetaccess: Private Internet Access
+      nordvpn: NordVPN
+      mullvad: Mullvad
+      surfshark: Surfshark
+      protonvpn: ProtonVPN
+      expressvpn: ExpressVPN
+      cyberghost: CyberGhost
+    defaultValue: privateinternetaccess
+    description: Choose your VPN service provider
+  - type: select
+    varName: VPN_TYPE
     label: VPN Protocol
+    required: true
     options:
-      - label: UDP (Faster)
-        value: udp
-      - label: TCP (More Reliable)
-        value: tcp
-    default: udp
-    required: true
-  - name: VPN Username
-    id: OPENVPN_USER
-    type: text
+      openvpn: OpenVPN
+      wireguard: WireGuard
+    defaultValue: openvpn
+    description: Select VPN protocol (OpenVPN is recommended for most providers)
+  - type: text
+    varName: OPENVPN_USER
     label: VPN Username
+    required: true
     placeholder: Enter your VPN username
-    required: true
-  - name: VPN Password
-    id: OPENVPN_PASSWORD
-    type: password
+    description: Your VPN account username
+  - type: password
+    varName: OPENVPN_PASSWORD
     label: VPN Password
+    required: true
     placeholder: Enter your VPN password
-    required: true
-  - name: Server Country
-    id: SERVER_COUNTRIES
-    type: text
+    description: Your VPN account password
+  - type: text
+    varName: SERVER_COUNTRIES
     label: Server Country
-    placeholder: e.g. Switzerland
     required: true
+    placeholder: e.g., Switzerland
+    description: Country where you want to connect (e.g., Switzerland, Netherlands, Canada)
+  - type: text
+    varName: SERVER_CITIES
+    label: Server City (optional)
+    required: false
+    placeholder: e.g., Zurich
+    description: Specific city for more precise server selection (optional)
+  - type: text
+    varName: WIREGUARD_PRIVATE_KEY
+    label: WireGuard Private Key (optional)
+    required: false
+    placeholder: Enter your WireGuard private key if using WireGuard
+    description: Only needed if using WireGuard protocol
 permissions:
   - data-dir
 submission:
   website: https://www.qbittorrent.org/
-  container_source: https://hotio.dev/containers/qbittorrent/
+  container_source: https://github.com/qdm12/gluetun
   app_source: https://github.com/diseric/diseric-umbrel-app-store
