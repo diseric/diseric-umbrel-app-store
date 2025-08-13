@@ -1,11 +1,114 @@
 services:
-  # Umbrel's app proxy - required for all apps
   app_proxy:
     environment:
-      APP_HOST: vpn
+      APP_HOST: configurator
       APP_PORT: 8090
 
-  # VPN container - all traffic routes through here
+  # Configuration web UI - shows first until VPN is configured
+  configurator:
+    image: nginx:alpine
+    container_name: qbittorrent-configurator
+    ports:
+      - 8090:80
+    volumes:
+      - ${APP_DATA_DIR}/config-ui:/usr/share/nginx/html
+      - ${APP_DATA_DIR}/scripts:/scripts
+    environment:
+      - APP_DATA_DIR=${APP_DATA_DIR}
+    command: >
+      sh -c "
+      if [ ! -f /usr/share/nginx/html/index.html ]; then
+        mkdir -p /usr/share/nginx/html;
+        cat > /usr/share/nginx/html/index.html << 'EOF'
+      <!DOCTYPE html>
+      <html>
+      <head>
+          <title>qBittorrent VPN Setup</title>
+          <style>
+              body { font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }
+              .form-group { margin-bottom: 20px; }
+              label { display: block; margin-bottom: 5px; font-weight: bold; }
+              input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+              button { background: #007cba; color: white; padding: 12px 24px; border: none; border-radius: 4px; cursor: pointer; }
+              button:hover { background: #005a87; }
+              .warning { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin-bottom: 20px; }
+          </style>
+      </head>
+      <body>
+          <h1>🔧 qBittorrent VPN Setup</h1>
+          <div class=\"warning\">
+              <strong>Setup Required:</strong> Configure your VPN credentials below to start using qBittorrent with VPN protection.
+          </div>
+          
+          <form id=\"vpnForm\" onsubmit=\"saveConfig(event)\">
+              <div class=\"form-group\">
+                  <label for=\"provider\">VPN Provider:</label>
+                  <select id=\"provider\" name=\"provider\" required>
+                      <option value=\"privateinternetaccess\">Private Internet Access</option>
+                      <option value=\"nordvpn\">NordVPN</option>
+                      <option value=\"mullvad\">Mullvad</option>
+                      <option value=\"surfshark\">Surfshark</option>
+                      <option value=\"protonvpn\">ProtonVPN</option>
+                  </select>
+              </div>
+              
+              <div class=\"form-group\">
+                  <label for=\"username\">VPN Username:</label>
+                  <input type=\"text\" id=\"username\" name=\"username\" required placeholder=\"Enter your VPN username\">
+              </div>
+              
+              <div class=\"form-group\">
+                  <label for=\"password\">VPN Password:</label>
+                  <input type=\"password\" id=\"password\" name=\"password\" required placeholder=\"Enter your VPN password\">
+              </div>
+              
+              <div class=\"form-group\">
+                  <label for=\"country\">Server Country:</label>
+                  <input type=\"text\" id=\"country\" name=\"country\" required placeholder=\"e.g., Switzerland\">
+              </div>
+              
+              <button type=\"submit\">Start qBittorrent with VPN</button>
+          </form>
+          
+          <script>
+          async function saveConfig(event) {
+              event.preventDefault();
+              
+              const formData = new FormData(event.target);
+              const config = {
+                  VPN_SERVICE_PROVIDER: formData.get('provider'),
+                  OPENVPN_USER: formData.get('username'),
+                  OPENVPN_PASSWORD: formData.get('password'),
+                  SERVER_COUNTRIES: formData.get('country'),
+                  VPN_TYPE: 'openvpn'
+              };
+              
+              try {
+                  const response = await fetch('/api/configure', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify(config)
+                  });
+                  
+                  if (response.ok) {
+                      document.body.innerHTML = '<h1>✅ Configuration Saved!</h1><p>Starting qBittorrent with VPN protection...</p><p>This page will redirect to qBittorrent once it is ready.</p>';
+                      setTimeout(() => window.location.reload(), 3000);
+                  } else {
+                      alert('Configuration failed. Please try again.');
+                  }
+              } catch (error) {
+                  alert('Error saving configuration: ' + error.message);
+              }
+          }
+          </script>
+      </body>
+      </html>
+      EOF
+      fi;
+      nginx -g 'daemon off;'"
+    restart: unless-stopped
+
+  # VPN container - starts only after configuration
   vpn:
     image: qmcgaw/gluetun:latest
     container_name: qbittorrent-vpn
@@ -14,43 +117,30 @@ services:
     devices:
       - /dev/net/tun:/dev/net/tun
     ports:
-      # Expose qBittorrent web UI port
-      - 8090:8090
-      # Expose qBittorrent connection port
       - 6881:6881
       - 6881:6881/udp
     volumes:
       - ${APP_DATA_DIR}/gluetun:/gluetun
+    env_file:
+      - ${APP_DATA_DIR}/vpn.env
     environment:
-      # VPN Configuration from user form
-      - VPN_SERVICE_PROVIDER=${VPN_SERVICE_PROVIDER}
-      - VPN_TYPE=${VPN_TYPE:-openvpn}
-      - OPENVPN_USER=${OPENVPN_USER}
-      - OPENVPN_PASSWORD=${OPENVPN_PASSWORD}
-      - SERVER_COUNTRIES=${SERVER_COUNTRIES}
-      - SERVER_CITIES=${SERVER_CITIES}
-      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
-      
-      # Security and networking
       - FIREWALL_OUTBOUND_SUBNETS=192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
       - FIREWALL_VPN_INPUT_PORTS=6881
-      
-      # Health check and logging
       - HEALTH_SERVER_ADDRESS=:9999
       - LOG_LEVEL=info
-      
-      # User permissions
       - PUID=1000
       - PGID=1000
     restart: unless-stopped
+    profiles:
+      - configured
     healthcheck:
-      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9999"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9999 || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
       start_period: 30s
 
-  # qBittorrent container - routes through VPN
+  # qBittorrent - starts only after VPN is healthy
   qbittorrent:
     image: lscr.io/linuxserver/qbittorrent:latest
     container_name: qbittorrent-app
@@ -67,3 +157,5 @@ services:
       - TZ=Etc/UTC
       - WEBUI_PORT=8090
     restart: unless-stopped
+    profiles:
+      - configured
