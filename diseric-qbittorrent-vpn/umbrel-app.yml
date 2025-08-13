@@ -1,25 +1,42 @@
 manifestVersion: 1
 id: diseric-qbittorrent-vpn
-name: qBittorrent VPN Setup
-version: "1.0.0"
+name: qBittorrent VPN 
+version: "4.6.7"
 category: files
-tagline: Setup guide for qBittorrent with VPN
+tagline: Feature-rich BitTorrent client with enhanced performance
 description: >-
-  A setup guide to help you configure qBittorrent with VPN protection.
+  qBittorrent is a free and open-source BitTorrent client that aims to provide
+  an open-source software alternative to µTorrent.
   
-  After installation, follow the setup instructions to configure your VPN
-  credentials securely on your device.
-developer: diseric
+  This version uses the optimized Hotio container which includes:
+  • Regular updates and security patches
+  • Optimized performance
+  • Built-in VPN support capabilities
+  • Enhanced logging and monitoring
+  
+  Features:
+  • Web-based user interface
+  • Advanced RSS support with download filters
+  • Bandwidth scheduler
+  • IP filtering (eMule & PeerGuardian format compatible)
+  • IPv6 compliant
+  • UPnP / NAT-PMP port forwarding support
+  • Available in 70+ languages
+  • Torrent creation tool
+  • Sequential downloading
+  
+  Default login: admin / adminadmin
+developer: qBittorrent Team
 website: https://www.qbittorrent.org/
-dependencies: []
-repo: https://github.com/diseric/diseric-umbrel-app-store
-support: https://github.com/diseric/diseric-umbrel-app-store/issues
+repo: https://github.com/qbittorrent/qBittorrent
+support: https://github.com/qbittorrent/qBittorrent/issues
 port: 8080
 gallery:
   - 1.jpg
   - 2.jpg
+  - 3.jpg
 path: ""
-defaultUsername: ""
-defaultPassword: ""
-submitter: diseric
-submission: https://github.com/diseric/diseric-umbrel-app-store
+defaultUsername: "admin"
+defaultPassword: "adminadmin"
+submitter: YourName
+submission: https://github.com/your-username/your-umbrel-app-store
