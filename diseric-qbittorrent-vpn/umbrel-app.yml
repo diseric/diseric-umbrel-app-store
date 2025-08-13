@@ -1,42 +1,25 @@
 manifestVersion: 1
 id: diseric-qbittorrent-vpn
-name: qBittorrent with VPN
-version: "4.6.5"
-category: Files
-tagline: Secure BitTorrent client with automatic VPN routing
+name: qBittorrent VPN Setup
+version: "1.0.0"
+category: files
+tagline: Setup guide for qBittorrent with VPN
 description: >-
-  qBittorrent is a free and open-source BitTorrent client that automatically
-  routes all traffic through a VPN connection powered by Gluetun.
+  A setup guide to help you configure qBittorrent with VPN protection.
   
-  🔒 PRIVACY FIRST: All torrent traffic is routed through your VPN to protect your identity.
-  
-  📋 SETUP REQUIRED: After installation, you'll need to configure your VPN credentials
-  through a simple setup process. Your credentials are stored securely on your device
-  and never transmitted anywhere else.
-  
-  ✅ SUPPORTED VPN PROVIDERS:
-  • Private Internet Access (PIA)
-  • NordVPN
-  • Mullvad
-  • Surfshark
-  • ProtonVPN
-  • ExpressVPN
-  • CyberGhost
-  • And many more...
-  
-  🛡️ SECURITY FEATURES:
-  • Kill switch prevents IP leaks if VPN disconnects
-  • Firewall blocks non-VPN traffic
-  • Health monitoring ensures VPN is always connected
-  • No DNS leaks - all traffic routed through VPN
-developer: The qBittorrent project
-author: diseric
-port: 8090
-compose:
-  file: docker-compose.yml
-permissions:
-  - data-dir
-submission:
-  website: https://www.qbittorrent.org/
-  container_source: https://github.com/qdm12/gluetun
-  app_source: https://github.com/diseric/diseric-umbrel-app-store
+  After installation, follow the setup instructions to configure your VPN
+  credentials securely on your device.
+developer: diseric
+website: https://www.qbittorrent.org/
+dependencies: []
+repo: https://github.com/diseric/diseric-umbrel-app-store
+support: https://github.com/diseric/diseric-umbrel-app-store/issues
+port: 8080
+gallery:
+  - 1.jpg
+  - 2.jpg
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+submitter: diseric
+submission: https://github.com/diseric/diseric-umbrel-app-store
