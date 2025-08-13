@@ -6,7 +6,7 @@ services:
   app_proxy:
     environment:
       APP_HOST: vpn
-      APP_PORT: 8080
+      APP_PORT: 8081
 
   # The VPN container. All network traffic will go through here.
   vpn:
