@@ -1,23 +1,44 @@
 manifestVersion: 1
-id: "digibyte-node"
-name: "DigiByte Node"
-category: "Bitcoin" # Or "Finance" - this is for the App Store category
-version: "8.22.0" # Corresponds to a recent DigiByte version
-tagline: "Run a full DigiByte node"
+id: diseric-digibyte-node-2
+category: finance
+name: DigiByte Node test
+version: "7.17.2"
+tagline: Decentralized blockchain with focus on security and speed
 description: >-
-  Support the DigiByte network by running your own full node. 
-  Independently validate transactions and blocks, enhancing your 
-  privacy and the network's decentralization. This app runs the 
-  DigiByte daemon and provides RPC access.
-developer: "Your Name or Pseudonym"
-website: "https://www.digibyte.org/"
+  DigiByte is a rapidly growing open-source blockchain created in late 2013 
+  and released in early 2014. After 6 years of forward-thinking development, 
+  DigiByte has become one of the safest, fastest, longest and most 
+  decentralized UTXO blockchain in existence.
+
+  This app runs a full DigiByte node, contributing to the network's 
+  decentralization and security. The node will download and validate 
+  the entire blockchain (~50GB) and participate in the peer-to-peer network.
+
+  Features:
+  • Full blockchain validation and storage
+  • P2P networking to support the DigiByte network
+  • RPC interface for advanced users and developers  
+  • Transaction indexing for complete functionality
+  • Built-in wallet functionality (optional)
+  • Real-time blockchain synchronization
+
+developer: DigiByte Community
+website: https://digibyte.org/
 dependencies: []
-repo: "https://github.com/DigiByte-Core/digibyte"
-support: "https://t.me/DigiByteCoin"
-port: 14022 # Default RPC port for DigiByte
+repo: https://github.com/digibyte-core/digibyte
+support: https://github.com/digibyte-core/digibyte/issues
+port: 3001
 gallery:
-  - "1.jpg"
-  - "2.jpg"
-  - "3.jpg"
+  - 1.jpg
+  - 2.jpg
+  - 3.jpg
 path: ""
+defaultUsername: ""
 defaultPassword: ""
+torOnly: false
+releaseNotes: >-
+  Initial release includes DigiByte Core v7.17.2 with full node functionality 
+  and web-based monitoring dashboard. Features real-time sync monitoring,
+  peer connection management, and blockchain statistics.
+submitter: diseric
+submission: https://github.com/diseric/diseric-umbrel-app-store
