@@ -1,58 +1,15 @@
+version: "3.7"
+
 services:
-  digibyte:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  app:
+    image: blocknetdx/digibyte:v8.22.0-rc3-staging # Using a specific, recent version
     restart: on-failure
     stop_grace_period: 1m
-    
-    environment:
-      - RPCUSER=umbrel
-      - RPCPASSWORD=${APP_PASSWORD}
-      - RPCALLOWIP=0.0.0.0/0
-      - MAXCONNECTIONS=300
-      - TESTNET=0
-      - DAEMON=1
-      - SERVER=1
-      - TXINDEX=1
-      - DISABLEWALLET=0
-      - LISTEN=1
-      - DISCOVER=1
-      - UPNP=0
-    
     volumes:
-      - ${APP_DATA_DIR}/data:/root/.digibyte
-      - ${APP_DATA_DIR}/logs:/var/log/digibyte
-    
-    ports:
-      - "12024:12024"
-      - "14022:14022"
-    
-    networks:
-      default:
-        ipv4_address: $APP_DISERIC_DIGIBYTE_NODE_DIGIBYTE_IP
-
-  web:
-    build:
-      context: ./web
-      dockerfile: Dockerfile
-    restart: on-failure
-    depends_on:
-      - digibyte
-    
+      - "${APP_DATA_DIR}/data:/opt/blockchain/data"
     environment:
-      - DIGIBYTE_RPC_HOST=digibyte
-      - DIGIBYTE_RPC_PORT=14022
-      - DIGIBYTE_RPC_USER=umbrel
-      - DIGIBYTE_RPC_PASSWORD=${APP_PASSWORD}
-      - NODE_ENV=production
-    
-    volumes:
-      - ${APP_DATA_DIR}/web:/app/data
-    
+      - RPCUSER=${APP_RPC_USER:-umbrel}
+      - RPCPASS=${APP_RPC_PASS:-moneyprintergobrrr}
     ports:
-      - "${APP_PORT}:3001"
-    
-    networks:
-      default:
-        ipv4_address: $APP_DISERIC_DIGIBYTE_NODE_WEB_IP
+      - "12024:12024" # P2P port
+      - "14022:14022" # RPC port
