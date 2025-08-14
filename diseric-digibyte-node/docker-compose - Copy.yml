@@ -1,28 +1,25 @@
-version: "3.7"
-
 services:
-  app_proxy:
-    environment:
-      APP_HOST: diseric-digibyte-node_web_1
-      APP_PORT: 3001
-
   digibyte:
-    build:
-      context: ./digibyte
-      dockerfile: Dockerfile
+    image: blocknetdx/digibyte:v8.22.0-rc3-staging
     restart: on-failure
     stop_grace_period: 1m
     
+    # Internal networking only
     expose:
-      - "12024"
-      - "14022"
+      - "12024"     # P2P port
+      - "14022"     # RPC port
     
     environment:
+      # RPC Configuration
       - RPCUSER=umbrel
-      - RPCPASSWORD=${APP_PASSWORD:-changeme123}
+      - RPCPASSWORD=${APP_PASSWORD}
       - RPCALLOWIP=0.0.0.0/0
+      
+      # Network Configuration
       - MAXCONNECTIONS=300
       - TESTNET=0
+      
+      # Node Configuration optimized for Umbrel
       - DAEMON=1
       - SERVER=1
       - TXINDEX=1
@@ -30,14 +27,15 @@ services:
       - LISTEN=1
       - DISCOVER=1
       - UPNP=0
+      
+      # Data directories
+      - DATADIR=/data/blockchain
+      - CONFIGDIR=/data/config
     
     volumes:
-      - ${APP_DATA_DIR}/data:/root/.digibyte
-      - ${APP_DATA_DIR}/logs:/var/log/digibyte
-    
-    networks:
-      default:
-        ipv4_address: $APP_DISERIC_DIGIBYTE_NODE_DIGIBYTE_IP
+      - ${APP_DATA_DIR}/config:/data/config
+      - ${APP_DATA_DIR}/blockchain:/data/blockchain
+      - ${APP_DATA_DIR}/logs:/data/logs
 
   web:
     build:
@@ -51,12 +49,11 @@ services:
       - DIGIBYTE_RPC_HOST=digibyte
       - DIGIBYTE_RPC_PORT=14022
       - DIGIBYTE_RPC_USER=umbrel
-      - DIGIBYTE_RPC_PASSWORD=${APP_PASSWORD:-changeme123}
+      - DIGIBYTE_RPC_PASSWORD=${APP_PASSWORD}
       - NODE_ENV=production
     
     volumes:
       - ${APP_DATA_DIR}/web:/app/data
     
-    networks:
-      default:
-        ipv4_address: $APP_DISERIC_DIGIBYTE_NODE_WEB_IP
+    ports:
+      - "${APP_PORT}:3001"

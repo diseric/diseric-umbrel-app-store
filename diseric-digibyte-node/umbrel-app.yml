@@ -1,62 +1,33 @@
 manifestVersion: 1
 id: diseric-digibyte-node
 category: finance
-name: DigiByte
+name: DigiByte Node
 version: "7.17.2"
 tagline: Decentralized blockchain with focus on security and speed
 description: >-
   DigiByte is a rapidly growing open-source blockchain created in late 2013 
   and released in early 2014. After 6 years of forward-thinking development, 
   DigiByte has become one of the safest, fastest, longest and most 
-  decentralized UTXO blockchain in existence with one of the most active 
-  communities in the crypto and blockchain space.
-  
-  
+  decentralized UTXO blockchain in existence.
+
   This app runs a full DigiByte node, contributing to the network's 
   decentralization and security. The node will download and validate 
   the entire blockchain (~50GB) and participate in the peer-to-peer network.
-  
-  
-  Features:
-  
-  • Full blockchain validation and storage
-  
-  • P2P networking to support the DigiByte network
-  
-  • RPC interface for advanced users and developers
-  
-  • Transaction indexing for complete functionality
-  
-  • Built-in wallet functionality (optional)
-  
-  • Real-time blockchain synchronization
-developer: DigiByte Core Team
+
+developer: DigiByte Community
 website: https://digibyte.org/
 dependencies: []
 repo: https://github.com/digibyte-core/digibyte
 support: https://github.com/digibyte-core/digibyte/issues
 port: 3001
-gallery:
-  - 1.jpg
-  - 2.jpg
-  - 3.jpg
+gallery: []
 path: ""
 defaultUsername: ""
 defaultPassword: ""
 torOnly: false
-permissions:
-  - STORAGE_DOWNLOADS
+permissions: []
 submitter: Community
 submission: https://github.com/getumbrel/umbrel-apps
 releaseNotes: >-
-  This release includes:
-  
-  • DigiByte Core v7.17.2 with latest security updates
-  
-  • Improved blockchain synchronization performance
-  
-  • Enhanced P2P networking stability
-  
-  • Full transaction indexing support
-  
-  • Optimized resource usage for Umbrel environments
+  Initial release includes DigiByte Core v7.17.2 with full node functionality 
+  and web-based monitoring dashboard.
