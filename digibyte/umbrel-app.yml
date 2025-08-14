@@ -1,5 +1,5 @@
 manifestVersion: 1
-id: digibyte-node
+id: digibyte
 category: finance
 name: DigiByte
 version: "7.17.2"
