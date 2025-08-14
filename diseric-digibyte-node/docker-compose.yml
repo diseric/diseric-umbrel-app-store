@@ -1,25 +1,15 @@
-version: "3.7"
-
 services:
-  app_proxy:
-    environment:
-      APP_HOST: diseric-digibyte-node_web_1
-      APP_PORT: 3001
-
   digibyte:
+    image: ghcr.io/diseric/digibyte-node:7.17.2
     build:
-      context: ./digibyte
+      context: .
       dockerfile: Dockerfile
     restart: on-failure
     stop_grace_period: 1m
     
-    expose:
-      - "12024"
-      - "14022"
-    
     environment:
       - RPCUSER=umbrel
-      - RPCPASSWORD=${APP_PASSWORD:-changeme123}
+      - RPCPASSWORD=${APP_PASSWORD}
       - RPCALLOWIP=0.0.0.0/0
       - MAXCONNECTIONS=300
       - TESTNET=0
@@ -35,11 +25,16 @@ services:
       - ${APP_DATA_DIR}/data:/root/.digibyte
       - ${APP_DATA_DIR}/logs:/var/log/digibyte
     
+    ports:
+      - "12024:12024"
+      - "14022:14022"
+    
     networks:
       default:
         ipv4_address: $APP_DISERIC_DIGIBYTE_NODE_DIGIBYTE_IP
 
   web:
+    image: ghcr.io/diseric/digibyte-web:latest
     build:
       context: ./web
       dockerfile: Dockerfile
@@ -51,11 +46,14 @@ services:
       - DIGIBYTE_RPC_HOST=digibyte
       - DIGIBYTE_RPC_PORT=14022
       - DIGIBYTE_RPC_USER=umbrel
-      - DIGIBYTE_RPC_PASSWORD=${APP_PASSWORD:-changeme123}
+      - DIGIBYTE_RPC_PASSWORD=${APP_PASSWORD}
       - NODE_ENV=production
     
     volumes:
       - ${APP_DATA_DIR}/web:/app/data
+    
+    ports:
+      - "${APP_PORT}:3001"
     
     networks:
       default:
