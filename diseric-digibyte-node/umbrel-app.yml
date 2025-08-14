@@ -1,7 +1,7 @@
 manifestVersion: 1
 id: diseric-digibyte-node
 category: finance
-name: DigiByte Node test
+name: DigiByte Node 2
 version: "7.17.2"
 tagline: Decentralized blockchain with focus on security and speed
 description: >-
