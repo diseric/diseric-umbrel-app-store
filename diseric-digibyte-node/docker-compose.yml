@@ -1,6 +1,6 @@
 services:
   digibyte:
-    image: ghcr.io/diseric/digibyte-node:7.17.2
+    image: blocknetdx/digibyte:v8.22.0-rc3-staging
     build:
       context: .
       dockerfile: Dockerfile
