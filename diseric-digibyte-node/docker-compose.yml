@@ -1,6 +1,5 @@
 services:
   digibyte:
-    image: blocknetdx/digibyte:v8.22.0-rc3-staging
     build:
       context: .
       dockerfile: Dockerfile
@@ -34,7 +33,6 @@ services:
         ipv4_address: $APP_DISERIC_DIGIBYTE_NODE_DIGIBYTE_IP
 
   web:
-    image: ghcr.io/diseric/digibyte-web:latest
     build:
       context: ./web
       dockerfile: Dockerfile
