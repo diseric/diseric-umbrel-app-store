@@ -1,0 +1,75 @@
+version: "3.7"
+
+services:
+  app_proxy:
+    environment:
+      APP_HOST: digibyte_web_1
+      APP_PORT: 3001
+      PROXY_AUTH_WHITELIST: "/,/api/*,/rpc/*"
+
+  digibyte:
+    image: blocknetdx/digibyte:latest
+    container_name: digibyte_node
+    restart: on-failure
+    stop_grace_period: 1m
+    
+    # Internal networking only - no external ports exposed
+    expose:
+      - "12024"     # P2P port
+      - "14022"     # RPC port
+    
+    environment:
+      # RPC Configuration - using Umbrel environment variables
+      - RPCUSER=umbrel
+      - RPCPASSWORD=${APP_PASSWORD:-digibyte_secure_password}
+      - RPCALLOWIP=0.0.0.0/0
+      
+      # Network Configuration
+      - MAXCONNECTIONS=300
+      - TESTNET=0
+      
+      # Node Configuration optimized for Umbrel
+      - DAEMON=1
+      - SERVER=1
+      - TXINDEX=1
+      - DISABLEWALLET=0
+      - LISTEN=1
+      - DISCOVER=1
+      - UPNP=0                      # Disabled in container environment
+      
+      # Umbrel specific paths
+      - DATADIR=${APP_DATA_DIR}/blockchain
+      - CONFIGDIR=${APP_DATA_DIR}/config
+    
+    volumes:
+      - ${APP_DATA_DIR}/config:/opt/blockchain/config
+      - ${APP_DATA_DIR}/blockchain:/opt/blockchain/data
+      - ${APP_DATA_DIR}/logs:/opt/blockchain/logs
+    
+    networks:
+      default:
+        ipv4_address: $APP_DIGIBYTE_NODE_IP
+
+  web:
+    image: digibyte-web:latest
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: digibyte_web
+    restart: on-failure
+    depends_on:
+      - digibyte
+    
+    environment:
+      - DIGIBYTE_RPC_HOST=digibyte
+      - DIGIBYTE_RPC_PORT=14022
+      - DIGIBYTE_RPC_USER=umbrel
+      - DIGIBYTE_RPC_PASSWORD=${APP_PASSWORD:-digibyte_secure_password}
+      - NODE_ENV=production
+    
+    volumes:
+      - ${APP_DATA_DIR}/web:/app/data
+    
+    networks:
+      default:
+        ipv4_address: $APP_DIGIBYTE_WEB_IP
