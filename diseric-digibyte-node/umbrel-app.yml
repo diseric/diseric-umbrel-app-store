@@ -1,5 +1,5 @@
 manifestVersion: 1
-id: diseric-digibyte-node-2
+id: diseric-digibyte-node
 category: finance
 name: DigiByte Node test
 version: "7.17.2"
