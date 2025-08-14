@@ -1,0 +1,23 @@
+manifestVersion: 1
+id: "digibyte-node"
+name: "DigiByte Node"
+category: "Bitcoin" # Or "Finance" - this is for the App Store category
+version: "8.22.0" # Corresponds to a recent DigiByte version
+tagline: "Run a full DigiByte node"
+description: >-
+  Support the DigiByte network by running your own full node. 
+  Independently validate transactions and blocks, enhancing your 
+  privacy and the network's decentralization. This app runs the 
+  DigiByte daemon and provides RPC access.
+developer: "Your Name or Pseudonym"
+website: "https://www.digibyte.org/"
+dependencies: []
+repo: "https://github.com/DigiByte-Core/digibyte"
+support: "https://t.me/DigiByteCoin"
+port: 14022 # Default RPC port for DigiByte
+gallery:
+  - "1.jpg"
+  - "2.jpg"
+  - "3.jpg"
+path: ""
+defaultPassword: ""
