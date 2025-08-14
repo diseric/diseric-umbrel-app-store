@@ -1,6 +1,6 @@
 services:
   digibyte:
-    image: blocknetdx/digibyte:latest
+    image: blocknetdx/digibyte:v8.22.0-rc3-staging
     restart: on-failure
     stop_grace_period: 1m
     
